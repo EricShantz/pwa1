@@ -1,4 +1,4 @@
-.page {
+/* .page {
   display: block;
   min-height: 100vh;
   width: 100vw;
@@ -12,4 +12,4 @@
 }
 .page.active {
   transform: translateY(0);
-}
+} */
