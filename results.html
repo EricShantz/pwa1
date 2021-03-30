@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Title</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#" />
+
+    <!-- ios support link and meta tags-->
+    <link rel="apple-touch-icon" href="#" />
+    <meta name="apple-mobile-web-app-status-bar" content="#" />
+
+    <!--Import Google Icon Font-->
+
+    <!-- styles materialize and main-->
+    <link rel="stylesheet" href="./css/materialize.min.css" />
+    <link rel="stylesheet" href="./css/main.css" />
+
+    <!-- scripts materialize and main app -->
+    <script src="./js/materialize.min.js"></script>
+    <script src="./js/app.js" type ="module"></script>
+  </head>
+  <body>
+    <section class="page" id="">
+      <div class="container">
+        <h4 class="">Page Title</h4>
+        <h5><!-- Search Keyword goes here --></h5>
+        <div class="movies">
+          <!-- cards for search result movies go here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- components over top -->
+    <!-- nav bar -->
+    <nav>
+      <div class="nav-wrapper">
+        <a href="index.html" class="brand-logo left">Results</a>
+      </div>
+    </nav>
+
+    <!-- search bar -->
+    <div class="nav-wrapper z-depth-3 " id="searchBar">
+      <form name="searchForm" id="searchForm">
+        <div class="input-field">
+          <input id="search" type="search" required />
+          <label class="label-icon" for="search"
+            ><i class="material-icons">search</i></label
+          >
+          <i class="material-icons" id="closeSearchBtn">close</i>
+        </div>
+      </form>
+    </div>
+
+    <!-- FAB search button to show search bar -->
+    <p>THIS IS RESULTS</p>
+  </body>
+</html>
