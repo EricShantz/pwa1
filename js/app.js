@@ -27,7 +27,7 @@ const APP = {
   sw: null,
   db: null,
   movieStore: null,
-  dbVersion: 3,
+  dbVersion: 5,
 
   init() {
     if ("serviceWorker" in navigator) {
@@ -82,21 +82,21 @@ const APP = {
       console.log("app was installed");
     });
 
-    if (movies) {
-      movies.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        let anchor = ev.target;
-        if (anchor.tagName === "A") {
-          let card = anchor.closest(".card");
-          let title = card.querySelector(".card-title span").textContent;
-          let mid = card.getAttribute("data-id");
-          let base = location.origin;
-          let url = new URL("./suggest.html", base);
-          url.search = `?movie_id=${mid}&ref=${encodeURIComponent(title)}`;
-          location.href = url;
-        }
-      });
-    }
+    // if (movies) {
+    //   movies.addEventListener("click", (ev) => {
+    //     ev.preventDefault();
+    //     let anchor = ev.target;
+    //     if (anchor.tagName === "A") {
+    //       let card = anchor.closest(".card");
+    //       let title = card.querySelector(".card-title span").textContent;
+    //       let mid = card.getAttribute("data-id");
+    //       let base = location.origin;
+    //       let url = new URL("./suggest.html", base);
+    //       url.search = `?movie_id=${mid}&ref=${encodeURIComponent(title)}`;
+    //       location.href = url;
+    //     }
+    //   });
+    // }
   },
 
   sendMessage(msg, target) {
