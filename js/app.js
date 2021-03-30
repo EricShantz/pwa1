@@ -27,7 +27,7 @@ const APP = {
   sw: null,
   db: null,
   movieStore: null,
-  dbVersion: 3,
+  dbVersion: 4,
 
   init() {
     if ("serviceWorker" in navigator) {
@@ -57,21 +57,23 @@ const APP = {
       console.log("app was installed");
     });
     
-    // if (movies) {
-      //   movies.addEventListener("click", (ev) => {
-        //     ev.preventDefault();
-        //     let anchor = ev.target;
-        //     if (anchor.tagName === "A") {
-          //       let card = anchor.closest(".card");
-          //       let title = card.querySelector(".card-title span").textContent;
-          //       let mid = card.getAttribute("data-id");
-          //       let base = location.origin;
-          //       let url = new URL("./suggest.html", base);
-          //       url.search = `?movie_id=${mid}&ref=${encodeURIComponent(title)}`;
-          //       location.href = url;
-          //     }
-          //   });
-          // }
+    let movies = document.querySelector('.movies');
+    if (movies) {
+      //navigate to the suggested page
+      //build the queryString with movie id and ref title
+      movies.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        let anchor = ev.target;
+        if (anchor.tagName === 'A') {
+          let card = anchor.closest('.card');
+          let title = card.querySelector('.card-title span').textContent;
+          let id = card.getAttribute('data-id');
+          let base = location.origin;
+          let url = new URL('./suggest.html', base);
+          url.search = `?movie_id=${id}&ref=${encodeURIComponent(title)}`;
+          location.href = url;
+        } }
+        )}
   },
     
   sendMessage(msg, target) {
@@ -117,28 +119,21 @@ const APP = {
 
   pageLoaded() {
     console.log("IM A PAGE AND IM LOADED");
-      
-      function getParameterByName(name) {
-        var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-      }
-      
-      let tx = APP.createTX('movieStore' , "readonly")
-      tx.oncomplete = (ev)=>{
-        console.log("transaction complete" , ev)
-      }
-  
-      let store = tx.objectStore("movieStore");
-      let request = store.getAll(getParameterByName("keyword"));
-  
-      request.onsuccess = (ev)=>{
-        console.log("successfully got a thing from db, im going to call build list now uwu")
-        let arr = ev.target.result
-        console.log(arr)
-  
-        // APP.buildList(arr);
-        APP.checkDB(getParameterByName("keyword"))
-      }
+
+      let params = new URL(document.location).searchParams;
+    let keyword = params.get('keyword');
+    if (keyword) {
+      //means we are on results.html
+      console.log(`on results.html - startSearch(${keyword})`);
+      APP.checkDB(keyword);
+    }
+    let id = parseInt(params.get('movie_id'));
+    let ref = params.get('ref');
+    if (id && ref) {
+      //we are on suggest.html
+      console.log(`look in db for movie_id ${id} or do fetch`);
+      APP.checkSuggestDB({ id, ref });
+    }
     },
 
   formSubmission(ev) {
@@ -173,7 +168,6 @@ const APP = {
         APP.buildListFromDB(arr)
       }
     }
-
   },
 
   async getData(keyword) {
@@ -342,6 +336,86 @@ const APP = {
     };
     return tx;
   },
-};
+
+  checkSuggestDB({id , ref}){
+    console.log("CHECK DB " , id)
+    let tx = APP.createTX('suggestionStore' , "readonly")
+    tx.oncomplete = (ev)=>{
+      console.log("db check completed" , ev)
+    }
+
+    let store = tx.objectStore("suggestionStore");
+    console.log("ID" , id)
+    let request = store.getAll(id);
+    console.log(request)
+
+    request.onsuccess = (ev)=>{
+      let arr = ev.target.result
+      console.log(arr)
+      if(arr.length === 0){
+        APP.getSuggestedData({id , ref})
+      }else{
+        APP.buildListFromDB(arr)
+      }
+    }
+  },
+
+
+  async getSuggestedData({id , ref}) {
+    console.log("YOU ARE TRYING TO GET SOME DATA SOONNN");
+    console.log(id)
+    let url = `${APP.BASE_URL}movie/${id}/similar?api_key=${APP.API_KEY}&ref=${ref}`;;
+    console.log(url, "IM A URL");
+    const response = await fetch(url);
+
+try {
+if (response.ok) {
+  let suggestResults = {
+    id: id,
+    results: await response.json(),
+  };
+  console.log("HEEEY  IM IN GET DATA AFTER THE OBJECT THING WEEEEEEEE" , suggestResults);
+  APP.saveSuggestToDB(suggestResults);
+} else {
+  throw new Error(response.message);
+}
+} catch (err) {
+console.warn(err);
+}
+},
+
+saveSuggestToDB(suggestResults) {
+  console.log("YOU ARE TRYING TO SAVE THE MOVIE TO THE DB");
+  console.log(suggestResults)
+  let suggestRes = suggestResults.results
+
+  let tx = APP.db.transaction("suggestionStore", "readwrite");
+  tx.oncomplete = (ev) => {
+    console.log("On completed triggered", ev);
+    APP.buildList(suggestRes)
+    // window.location.href = `/results.html?keyword=${keyword}`;
+
+  };
+  tx.onerror = (err) => {
+    console.warn(err);
+  };
+
+  let store = tx.objectStore("suggestionStore");
+  let request = store.add(suggestResults);
+
+  request.onsuccess = (ev) => {
+    console.log("succesfully added an object", ev);
+  };
+
+  request.oncomplete = (ev) => {
+    console.log("Transaction completed: ", ev);
+  };
+
+  request.onerror = (err) => {
+    console.warn(err);
+  };
+},
+  
+}
 
 document.addEventListener("DOMContentLoaded", APP.init);
