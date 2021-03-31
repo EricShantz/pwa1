@@ -27,7 +27,7 @@ const APP = {
   sw: null,
   db: null,
   movieStore: null,
-  dbVersion: 4,
+  dbVersion: 1,
 
   init() {
     if ("serviceWorker" in navigator) {

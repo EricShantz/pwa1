@@ -1,7 +1,7 @@
 //service worker for suggest-a-movie app
 
-let staticCache = 'static-v6';
-let dynamicCache = 'dynamic-v6';
+let staticCache = 'static-v1';
+let dynamicCache = 'dynamic-v1';
 // let dbVersion = 1;
 let cacheSize = 65;
 let staticList = [
