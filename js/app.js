@@ -27,7 +27,7 @@ const APP = {
   sw: null,
   db: null,
   movieStore: null,
-  dbVersion: 1,
+  dbVersion: 2,
 
   init() {
     if ("serviceWorker" in navigator) {
@@ -35,7 +35,6 @@ const APP = {
       console.log("service worker registered");
     }
     APP.openDB();
-    // APP.pageLoaded();
     APP.addListeners();
 
     if (navigator.standalone) {
@@ -56,11 +55,21 @@ const APP = {
     window.addEventListener("appinstalled", (evt) => {
       console.log("app was installed");
     });
+
+    window.addEventListener('online' , ev =>{
+      console.log("Connection found. Welcome to the internet" , ev)
+    })
+
+    window.addEventListener('offline' , ev =>{
+      console.log("Connection lost. No internet for you" , ev)
+      let msg = {
+        message: "Connection lost. No internet for you"
+      }
+      navigator.serviceWorker.controller.relayToServiceWorker(msg)
+    })
     
     let movies = document.querySelector('.movies');
     if (movies) {
-      //navigate to the suggested page
-      //build the queryString with movie id and ref title
       movies.addEventListener('click', (ev) => {
         ev.preventDefault();
         let anchor = ev.target;
@@ -123,14 +132,12 @@ const APP = {
       let params = new URL(document.location).searchParams;
     let keyword = params.get('keyword');
     if (keyword) {
-      //means we are on results.html
       console.log(`on results.html - startSearch(${keyword})`);
       APP.checkDB(keyword);
     }
     let id = parseInt(params.get('movie_id'));
     let ref = params.get('ref');
     if (id && ref) {
-      //we are on suggest.html
       console.log(`look in db for movie_id ${id} or do fetch`);
       APP.checkSuggestDB({ id, ref });
     }
@@ -141,7 +148,6 @@ const APP = {
     console.log(`EVENT : ${ev}`);
     const keyword = ev.target.search.value;
     console.log(`KEYWORD: ${keyword}`);
-    // APP.checkDB(keyword);
     if(keyword){
       window.location.href = `/results.html?keyword=${keyword}`;
     }
@@ -171,7 +177,6 @@ const APP = {
   },
 
   async getData(keyword) {
-          console.log("YOU ARE TRYING TO GET SOME DATA SOONNN");
           console.log(keyword)
           let URL = `${APP.BASE_URL}search/movie?api_key=${APP.API_KEY}&query=${keyword}`;
           console.log(URL, "IM A URL");
@@ -183,7 +188,6 @@ const APP = {
           keyword: keyword,
           results: await response.json(),
         };
-        console.log("HEEEY  IM IN GET DATA AFTER THE OBJECT THING WEEEEEEEE");
         APP.saveMovieToDB(movieResults);
       } else {
         throw new Error(response.message);
@@ -225,9 +229,8 @@ const APP = {
     };
   },
 
-  buildList(movies){
+  buildList(movies){    
     console.log(movies)
-    // let movieRes = movies[0].results
     let movieResults = movies.results
 
     console.log("IM BUILDING A LIST")
@@ -274,6 +277,29 @@ const APP = {
         </div>`;
       }
     }
+
+    if(window.location.href.includes('/results.html')){
+      console.log("RESULTSSSSS")
+      APP.resultsForDisplay();
+    } else{
+      APP.resultsSimilarTo()
+    }
+  },
+
+  resultsForDisplay(){
+    function extract(name){
+      name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+      var regexS = "[\\?&]"+name+"=([^&#]*)";
+      var regex = new RegExp( regexS );
+      var results = regex.exec( window.location.href );
+      if( results == null )
+        return "";
+      else
+        return results[1];
+    }
+    var keywordResult= extract("keyword");
+  
+    document.querySelector('.resultsFor').textContent= `Results for: "${keywordResult}" `
   },
 
   buildListFromDB(movies){
@@ -315,16 +341,31 @@ const APP = {
             <a href="#" class="find-suggested light-blue-text text-darken-3">Show Similar<i class="material-icons right">search</i></a>
           </div>
         </div>`;
-          })
+      })
           .join("\n");
-      } else {
-        //no cards
-        container.innerHTML = `<div class="card hoverable">
+        } else {
+          //no cards
+          container.innerHTML = `<div class="card hoverable">
           <div class="card-content">
-            <h3 class="card-title activator"><span>No Content Available.</span></h3>
+          <h3 class="card-title activator"><span>No Content Available.</span></h3>
           </div>
-        </div>`;
+          </div>`;
+        }
       }
+      if(window.location.href.includes('/results.html')){
+        APP.resultsForDisplay();
+      } else{
+        APP.resultsSimilarTo()
+      }
+  },
+
+  resultsSimilarTo(){
+    let SQ = new URL (document.location).searchParams
+    let ref = SQ.get("ref")
+
+    let suggestionTitle =  document.querySelector(".similar")
+    if(ref && suggestionTitle){
+      suggestionTitle.textContent = `Results Similar To: "${ref}" `
     }
   },
 

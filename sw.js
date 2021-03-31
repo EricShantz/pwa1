@@ -1,9 +1,9 @@
 //service worker for suggest-a-movie app
 
-let staticCache = 'static-v1';
-let dynamicCache = 'dynamic-v1';
+let staticCache = 'static-v2';
+let dynamicCache = 'dynamic-v2';
 // let dbVersion = 1;
-let cacheSize = 65;
+let maxLength = 65;
 let staticList = [
   '/',
   '/index.html',
@@ -18,8 +18,8 @@ let staticList = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://fonts.gstatic.com/s/materialicons/v78/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2',
 ];
-let dynamicList = [];
 
+//https://www.google.com/search?q=how+to+limit+dynamic+cache+size+in+pwa&rlz=1C5CHFA_enCA913CA913&oq=how+to&aqs=chrome.0.69i59l3j69i57j69i65l2j69i61l2.2063j0j7&sourceid=chrome&ie=UTF-8#kpvalbx=_PJBkYMezLJuo5NoP-pSn8AU12
 const cacheLimit = (cacheName, maxLength) => {
   caches.open(cacheName)
   .then(cache => { cache.keys()
@@ -45,21 +45,6 @@ self.addEventListener('install', ev => {
   self.skipWaiting()
 });
 
-
-// self.addEventListener('activate', (ev) => {
-//   //activate event - browser now using this version
-//   ev.waitUntil(
-//     (async () => {
-//       if ('navigationPreload' in self.registration) {
-//         await self.registration.navigationPreload.enable()
-//       }
-//     })()
-//   )
-
-//   self.clients.claim()
-// });
-
-//????
 self.addEventListener('activate', ev => {
   ev.waitUntil(
     (async() => {
@@ -76,6 +61,9 @@ self.addEventListener('activate', ev => {
 
 //open and add items to dynamic cache
 self.addEventListener('fetch', ev => {
+  if (
+    ev.request.method === 'GET'
+  ) {
   ev.respondWith(
     (async () => {
       const cachedResponse = await caches.match(ev.request)
@@ -90,18 +78,17 @@ self.addEventListener('fetch', ev => {
         dyncache.put(ev.request, networkResponse.clone())
         // TO DO: control which assets go into dynamic cache here - suggest and movie results html as well as their images
         // right now it is storing everything that is not already in static cache
-        cacheLimit(dyncache, 65)
+        cacheLimit(dynamicCache, maxLength)
         return networkResponse
       } catch(error) {
         const requestedPage = ev.request.url.indexOf('.html')
-        // TO DO: change code use OFFLINE)URL
-        if(requestedPage > -1) { // it will only show offline page if user is trying to go to a page (not when it is trying to load an image etc.)
+        if(requestedPage > -1) {
           return caches.match('/404.html')
         } 
       }
     })()
   )
-})
+}})
 
 //offline loading
 self.addEventListener('fetch', (ev) => {
@@ -128,41 +115,9 @@ self.addEventListener('fetch', (ev) => {
   )} 
 });
 
-
-
-
-
-// =====================================Fetch Call for API================================================
-// self.addEventListener('fetch' , event => {
-//   if(event.request.url.startsWith('https://swapi.dev/api') && event.request.method === "GET"){
-//     event.respondWith(
-//       (async () => {
-//         const cache = await caches.open('swapi')
-
-//         try{
-//           //trying the network first, then trying the cache
-//           const networkResponse = await fetch(event.request)
-//           cache.put(event.request , networkResponse.clone()) //key and value pair... network response will only be created once, so we clone it
-//           return networkResponse
-//         } catch(err){
-//           //if there was a network error, check the cache
-//           const cachedResult = await cache.match(event.request)
-//           return cachedResult;
-//         }
-//       })()
-//     )
-//   }
-// })
-// =====================================================================================
-
-
-
-
-
-
-
 self.addEventListener('message', ({ data }) => {
   //message received from a web page that uses this sw
+  console.log(data)
 });
 
 const sendMessage = async (msg) => {
