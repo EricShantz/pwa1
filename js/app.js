@@ -27,7 +27,7 @@ const APP = {
   sw: null,
   db: null,
   movieStore: null,
-  dbVersion: 2,
+  dbVersion: 5,
 
   init() {
     if ("serviceWorker" in navigator) {
@@ -61,7 +61,6 @@ const APP = {
     })
 
     window.addEventListener('offline' , ev =>{
-      console.log("Connection lost. No internet for you" , ev)
       let msg = {
         message: "Connection lost. No internet for you"
       }
@@ -100,7 +99,7 @@ const APP = {
 
     DBOpenReq.addEventListener("success", (ev) => {
       APP.db = ev.target.result;
-      console.log("FUYCK YEAH! DB success", APP.db);
+      console.log("DB success", APP.db);
       APP.pageLoaded()
     });
 
@@ -127,8 +126,6 @@ const APP = {
   },
 
   pageLoaded() {
-    console.log("IM A PAGE AND IM LOADED");
-
       let params = new URL(document.location).searchParams;
     let keyword = params.get('keyword');
     if (keyword) {
@@ -145,7 +142,6 @@ const APP = {
 
   formSubmission(ev) {
     ev.preventDefault();
-    console.log(`EVENT : ${ev}`);
     const keyword = ev.target.search.value;
     console.log(`KEYWORD: ${keyword}`);
     if(keyword){
@@ -154,7 +150,6 @@ const APP = {
   },
 
   checkDB(keyword){
-    console.log("CHECK DB " , keyword)
     let tx = APP.createTX('movieStore' , "readonly")
     tx.oncomplete = (ev)=>{
       console.log("db check completed" , ev)
@@ -163,11 +158,9 @@ const APP = {
     let store = tx.objectStore("movieStore");
     console.log("KEYWORD" , keyword)
     let request = store.getAll(keyword);
-    console.log(request)
 
     request.onsuccess = (ev)=>{
       let arr = ev.target.result
-      console.log(arr)
       if(arr.length === 0){
         APP.getData(keyword)
       }else{
@@ -177,7 +170,6 @@ const APP = {
   },
 
   async getData(keyword) {
-          console.log(keyword)
           let URL = `${APP.BASE_URL}search/movie?api_key=${APP.API_KEY}&query=${keyword}`;
           console.log(URL, "IM A URL");
           const response = await fetch(URL);
@@ -198,7 +190,6 @@ const APP = {
   },
 
   saveMovieToDB(movieResults) {
-    console.log("YOU ARE TRYING TO SAVE THE MOVIE TO THE DB");
     console.log(movieResults)
     let movieRes = movieResults.results
 
@@ -401,11 +392,10 @@ const APP = {
     }
   },
 
-
   async getSuggestedData({id , ref}) {
     console.log("YOU ARE TRYING TO GET SOME DATA SOONNN");
     console.log(id)
-    let url = `${APP.BASE_URL}movie/${id}/similar?api_key=${APP.API_KEY}&ref=${ref}`;;
+    const url = `${APP.BASE_URL}movie/${id}/recommendations?api_key=${APP.API_KEY}&ref=${ref}`
     console.log(url, "IM A URL");
     const response = await fetch(url);
 

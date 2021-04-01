@@ -1,16 +1,24 @@
 {
-  "name": "MADD PWA",
+  "name": "MADD 9022 PWA",
   "short_name": "PWA",
   "icons": [
     {
-      "src": "/img/offline.png",
-      "sizes": "980x820",
-      "type": "image/png"
-    }
+      "src": "/img/icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+  },
+  {
+      "src": "/img/icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+  }
   ],
   "orientation": "portrait-primary",
-  "theme_color": "#bada55",
-  "background_color": "#bada55",
+  "theme_color": "#003399",
+  "background_color": "#003399",
   "display": "standalone",
-  "start_url": "/index.html"
+  "start_url": "/index.html",
+  "scope":"/"
 }

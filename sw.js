@@ -1,7 +1,7 @@
 //service worker for suggest-a-movie app
 
-let staticCache = 'static-v2';
-let dynamicCache = 'dynamic-v2';
+let staticCache = 'static-v5';
+let dynamicCache = 'dynamic-v5';
 // let dbVersion = 1;
 let maxLength = 65;
 let staticList = [
@@ -15,6 +15,7 @@ let staticList = [
   '/js/materialize.min.js',
   '/img/offline.png',
   'img/icon-512x512.png',
+  'img/TMdb.svg',
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://fonts.gstatic.com/s/materialicons/v78/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2',
 ];
